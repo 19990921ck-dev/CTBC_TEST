@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,6 +11,7 @@
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
   <!-- ==========================================
@@ -18,21 +20,22 @@
   <div id="loginView" class="login-container">
     <div class="login-card">
       <div class="brand-badge">
-        <span>🎸</span> 小型演唱會入場通關系統
+        <span>🎸</span> 2026CCC入場通關系統
       </div>
       <h1 class="login-title">系統人員登入</h1>
       <p class="login-subtitle">請輸入活動白名單授權之電子郵件以繼續</p>
-      
+
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
           <label class="form-label" for="loginEmail">電子郵件 (Email)</label>
-          <input type="email" id="loginEmail" class="form-input" placeholder="example@domain.com" required autocomplete="email">
+          <input type="email" id="loginEmail" class="form-input" placeholder="example@domain.com" required
+            autocomplete="email">
         </div>
         <button type="submit" id="loginBtn" class="btn btn-primary">
           <span>確認登入</span> ➔
         </button>
       </form>
-      
+
       <div id="loginAlert" class="alert-box alert-danger"></div>
     </div>
   </div>
@@ -80,7 +83,7 @@
 
     <!-- 主內容容器 -->
     <main class="main-content">
-      
+
       <!-- ==========================================
        * 頁籤 1: 鏡頭驗票 (Scanner Tab)
        * ========================================== -->
@@ -97,9 +100,11 @@
                 🔄 切換前後鏡頭
               </button>
             </div>
-            
+
             <!-- 驗票方式提示區 (由 app.html 自動渲染，必須放在 #reader 外面，否則會被掃描器清空) -->
-            <div id="startCameraPrompt" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 260px; padding: 20px; text-align: center; background: rgba(15, 23, 42, 0.85); border-radius: 12px; gap: 12px;"></div>
+            <div id="startCameraPrompt"
+              style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 260px; padding: 20px; text-align: center; background: rgba(15, 23, 42, 0.85); border-radius: 12px; gap: 12px;">
+            </div>
 
             <!-- 即時鏡頭畫面 container (只有允許即時相機時才會顯示) -->
             <div id="reader" style="display: none;"></div>
@@ -157,7 +162,8 @@
       <section id="tab-query" class="tab-pane">
         <div class="search-bar">
           <div class="search-input-wrap">
-            <input type="text" id="queryKeywordInput" class="form-input" placeholder="搜尋姓名、學號、電話、Email 或 Token..." onkeypress="handleQueryKeyPress(event)">
+            <input type="text" id="queryKeywordInput" class="form-input" placeholder="搜尋姓名、學號、電話、Email 或 Token..."
+              onkeypress="handleQueryKeyPress(event)">
           </div>
           <button onclick="executeAttendeeQuery()" class="btn btn-primary" style="width: auto;">
             🔍 查詢觀眾
@@ -240,7 +246,8 @@
                   <span id="campusStatCount">0 / 0 人</span>
                 </div>
                 <div class="progress-bar-container">
-                  <div id="campusProgressBar" class="progress-bar-fill" style="width: 0%; background: var(--primary);"></div>
+                  <div id="campusProgressBar" class="progress-bar-fill" style="width: 0%; background: var(--primary);">
+                  </div>
                 </div>
               </div>
 
@@ -250,7 +257,8 @@
                   <span id="offCampusStatCount">0 / 0 人</span>
                 </div>
                 <div class="progress-bar-container">
-                  <div id="offCampusProgressBar" class="progress-bar-fill" style="width: 0%; background: var(--accent-pink);"></div>
+                  <div id="offCampusProgressBar" class="progress-bar-fill"
+                    style="width: 0%; background: var(--accent-pink);"></div>
                 </div>
               </div>
             </div>
@@ -271,7 +279,8 @@
        * 頁籤 4: 白名單管理 (Admin Only)
        * ========================================== -->
       <section id="tab-whitelist" class="tab-pane">
-        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px;">
+        <div
+          style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px;">
           <h2 style="font-size: 1.25rem; font-weight: 700;">系統登入白名單管理 (CRUD)</h2>
           <div style="display: flex; gap: 10px;">
             <button onclick="triggerBackfillTokens()" class="btn btn-secondary btn-sm">
@@ -318,7 +327,7 @@
       </div>
       <form onsubmit="handleSaveUser(event)">
         <input type="hidden" id="editOriginalEmail">
-        
+
         <div class="form-group">
           <label class="form-label" for="modalEmail">電子郵件 (Email)</label>
           <input type="email" id="modalEmail" class="form-input" required placeholder="user@domain.com">
@@ -349,4 +358,5 @@
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
+
 </html>
