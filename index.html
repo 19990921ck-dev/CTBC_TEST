@@ -197,10 +197,16 @@
        * 頁籤 3: 實時統計看板 (Stats Dashboard Tab)
        * ========================================== -->
       <section id="tab-stats" class="tab-pane">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px;">
           <h2 style="font-size: 1.25rem; font-weight: 700;">入場數據實時統計看板</h2>
-          <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
-            <span class="status-dot"></span> 5秒自動更新中
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button id="refreshStatsBtn" onclick="fetchStats(true)" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+              🔄 重新整理
+            </button>
+            <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+              <span id="statsPollingDot" class="status-dot paused"></span>
+              <span id="statsPollingNoticeText">手動更新模式</span>
+            </div>
           </div>
         </div>
 
