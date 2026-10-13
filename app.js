@@ -159,6 +159,7 @@ function showAppView() {
     document.getElementById("whitelistTabBtn").style.display = "none";
   }
 
+  updateStatsPollingUI();
   switchTab("scanner");
   startStatsPolling();
 }
@@ -448,48 +449,87 @@ async function executeAttendeeQuery() {
 }
 
 // ==========================================
-// 7. 實時統計與 5 秒輪詢
+// 7. 實時統計與輪詢控制 (依角色調整)
 // ==========================================
 
-function startStatsPolling() {
-  clearInterval(statsTimer);
-  fetchStats();
-  statsTimer = setInterval(fetchStats, 5000);
+function updateStatsPollingUI() {
+  const dot = document.getElementById("statsPollingDot");
+  const notice = document.getElementById("statsPollingNoticeText");
+  if (!dot || !notice) return;
+
+  if (currentUser && currentUser.role === "管理者") {
+    dot.classList.remove("paused");
+    notice.innerText = "15 秒自動更新中 (管理者)";
+  } else {
+    dot.classList.add("paused");
+    notice.innerText = "手動更新模式 (切換分頁或點擊刷新)";
+  }
 }
 
-async function fetchStats() {
+/**
+ * 啟動統計輪詢：
+ * - 一般檢票人員：完全不啟動背景定時輪詢，保留所有後端頻寬與 Lock 給現場掃描
+ * - 管理者：每 15 秒自動輪詢一次
+ */
+function startStatsPolling() {
+  clearInterval(statsTimer);
+  statsTimer = null;
+
+  if (!currentUser || currentUser.role !== "管理者") {
+    return;
+  }
+
+  fetchStats();
+  statsTimer = setInterval(fetchStats, 15000);
+}
+
+async function fetchStats(isManual = false) {
   if (!sessionToken && !IS_LOCAL_MOCK) return;
-  const res = await callBackend("getStats");
-  if (!(res.success && res.data)) return;
 
-  const d = res.data;
-  document.getElementById("statTotalRegistered").innerText = d.totalRegistered;
-  document.getElementById("statTotalCheckedIn").innerText = d.totalCheckedIn;
-  document.getElementById("statTotalNotCheckedIn").innerText = d.totalNotCheckedIn;
-  document.getElementById("statAttendanceRate").innerText = d.attendanceRate + "%";
-  document.getElementById("statProgressBar").style.width = d.attendanceRate + "%";
+  const refreshBtn = document.getElementById("refreshStatsBtn");
+  if (isManual && refreshBtn) {
+    refreshBtn.disabled = true;
+    refreshBtn.innerText = "更新中...";
+  }
 
-  document.getElementById("campusStatCount").innerText = `${d.campus.checkedIn} / ${d.campus.registered} 人`;
-  const campusRate = d.campus.registered > 0 ? (d.campus.checkedIn / d.campus.registered) * 100 : 0;
-  document.getElementById("campusProgressBar").style.width = campusRate + "%";
+  try {
+    const res = await callBackend("getStats");
+    if (!(res.success && res.data)) return;
 
-  document.getElementById("offCampusStatCount").innerText = `${d.offCampus.checkedIn} / ${d.offCampus.registered} 人`;
-  const offCampusRate = d.offCampus.registered > 0 ? (d.offCampus.checkedIn / d.offCampus.registered) * 100 : 0;
-  document.getElementById("offCampusProgressBar").style.width = offCampusRate + "%";
+    const d = res.data;
+    document.getElementById("statTotalRegistered").innerText = d.totalRegistered;
+    document.getElementById("statTotalCheckedIn").innerText = d.totalCheckedIn;
+    document.getElementById("statTotalNotCheckedIn").innerText = d.totalNotCheckedIn;
+    document.getElementById("statAttendanceRate").innerText = d.attendanceRate + "%";
+    document.getElementById("statProgressBar").style.width = d.attendanceRate + "%";
 
-  const logsList = document.getElementById("recentLogsList");
-  if (d.recentLogs && d.recentLogs.length > 0) {
-    logsList.innerHTML = d.recentLogs.map(log => `
-      <li class="log-item">
-        <div>
-          <span style="font-weight: 700;">${escapeHtml(log.name)}</span>
-          <span class="role-badge ${log.category === "校內" ? "role-admin" : "role-staff"}" style="font-size: 0.65rem; margin-left: 6px;">${escapeHtml(log.category)}</span>
-        </div>
-        <div style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(log.time)} 核銷</div>
-      </li>
-    `).join("");
-  } else {
-    logsList.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 20px;">尚無最新核銷紀錄</li>`;
+    document.getElementById("campusStatCount").innerText = `${d.campus.checkedIn} / ${d.campus.registered} 人`;
+    const campusRate = d.campus.registered > 0 ? (d.campus.checkedIn / d.campus.registered) * 100 : 0;
+    document.getElementById("campusProgressBar").style.width = campusRate + "%";
+
+    document.getElementById("offCampusStatCount").innerText = `${d.offCampus.checkedIn} / ${d.offCampus.registered} 人`;
+    const offCampusRate = d.offCampus.registered > 0 ? (d.offCampus.checkedIn / d.offCampus.registered) * 100 : 0;
+    document.getElementById("offCampusProgressBar").style.width = offCampusRate + "%";
+
+    const logsList = document.getElementById("recentLogsList");
+    if (d.recentLogs && d.recentLogs.length > 0) {
+      logsList.innerHTML = d.recentLogs.map(log => `
+        <li class="log-item">
+          <div>
+            <span style="font-weight: 700;">${escapeHtml(log.name)}</span>
+            <span class="role-badge ${log.category === "校內" ? "role-admin" : "role-staff"}" style="font-size: 0.65rem; margin-left: 6px;">${escapeHtml(log.category)}</span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(log.time)} 核銷</div>
+        </li>
+      `).join("");
+    } else {
+      logsList.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 20px;">尚無最新核銷紀錄</li>`;
+    }
+  } finally {
+    if (isManual && refreshBtn) {
+      refreshBtn.disabled = false;
+      refreshBtn.innerText = "🔄 重新整理";
+    }
   }
 }
 
